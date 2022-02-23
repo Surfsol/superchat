@@ -1,15 +1,15 @@
-import logo from './logo.svg';
 import './App.css';
-
-import firebase from 'firebase/app'
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+//import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
 import SignIn from './components/SignIn'
+import {getAuth, onAuthStateChanged} from 'firebase/auth'
+// import {useAuthState} from 'react-firebase-hooks/auth'
+// import {useCollectionData} from 'react-firebase-hooks/firestore'
 
-import {useAuthState} from 'react-firebase-hooks/auth'
-import {useCollectionData} from 'react-firebase-hooks/firestore'
-
-firebase.initializeApp({
+const app = initializeApp({
   apiKey: "AIzaSyBK7kdKrdzO85aEG0Bxh5rZv64mIGKawCc",
   authDomain: "superchatfire.firebaseapp.com",
   projectId: "superchatfire",
@@ -19,16 +19,27 @@ firebase.initializeApp({
   measurementId: "G-WVW8090KLV"
 })
 
-const auth = firebase.auth()
-const firestore = firebase.firestore()
+const auth = getAuth(app)
+const db = getFirestore(app)
+//const firestore = app.firestore()
 
 function App() {
-  const [user] = useAuthState()
+//  const [user] = useAuthState()
+const authState = onAuthStateChanged(auth, user => console.log({user}))
+console.log(authState())
 
-  const signInGoogle = () => {
-    const provider = new firebase.auth.GoogleAuthProvider
-    auth.signInWithPopup(provider)
+//   const signInGoogle = () => {
+//     const provider = new firebase.auth.GoogleAuthProvider
+//     auth.signInWithPopup(provider)
+// }
+
+const getMessages =async(db:any) => {
+  const collect = collection(db, 'messages')
+  const docs = await getDocs(collect)
+  const list = docs.docs.map(doc => doc.data())
+  return list
 }
+getMessages(db)
 
 function SignOut() {
   return auth.currentUser && (
@@ -42,7 +53,7 @@ function SignOut() {
      
       </header>
       <section>
-        {user ? <ChatRoom firestore={firestore}/> : <SignIn signInGoogle={signInGoogle}/>}
+        {/* {user ? <ChatRoom firestore={firestore} auth={auth}/> : <SignIn signInGoogle={signInGoogle}/>} */}
       </section>
     </div>
   );
